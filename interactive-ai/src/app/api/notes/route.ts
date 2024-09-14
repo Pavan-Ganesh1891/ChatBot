@@ -1,6 +1,6 @@
-import { notesIndex } from "@/lib/db/pinecone";
+// import { notesIndex } from "@/lib/db/pinecone";
 import prisma from "@/lib/db/prisma";
-import { getEmbedding } from "@/lib/openai";
+// import { getEmbedding } from "@/lib/openai";
 import {
   createNoteSchema,
   deleteNoteSchema,
@@ -27,26 +27,27 @@ export async function POST(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const embedding = await getEmbeddingForNote(title, content);
+    // const embedding = await getEmbeddingForNote(title, content);
 
-    const note = await prisma.$transaction(async (tx) => {
-      const note = await tx.note.create({
-        data: {
-          title,
-          content,
-          userId,
-        },
-      });
+    // const note = await prisma.$transaction(async (tx) => {
 
-      await notesIndex.upsert([
-        {
-          id: note.id,
-          values: embedding,
-          metadata: { userId },
-        },
-      ]);
+    //   await notesIndex.upsert([
+    //     {
+    //       id: note.id,
+    //       values: embedding,
+    //       metadata: { userId },
+    //     },
+    //   ]);
 
-      return note;
+    //   return note;
+    // });
+
+    const note = await prisma.note.create({
+      data: {
+        title,
+        content,
+        userId,
+      },
     });
 
     return Response.json({ note }, { status: 201 });
@@ -80,6 +81,21 @@ export async function PUT(req: Request) {
     if (!userId || userId !== note.userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // const embedding = await getEmbeddingForNote(title, content);
+
+    // const updateNote = await prisma.$transaction(async (tx) => {
+
+    //   await notesIndex.upsert([
+    //     {
+    //       id,
+    //       values: embedding,
+    //       metadata: { userId },
+    //     },
+    //   ]);
+
+    //   return updateNote;
+    // });
 
     const updateNote = await prisma.note.update({
       where: { id },
@@ -121,6 +137,10 @@ export async function DELETE(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // await prisma.$transaction(async (tx) => {
+    //
+    // });
+
     await prisma.note.delete({ where: { id } });
 
     return Response.json({ message: "Note deleted" }, { status: 200 });
@@ -130,6 +150,6 @@ export async function DELETE(req: Request) {
   }
 }
 
-async function getEmbeddingForNote(title: string, content: string | undefined) {
-  return getEmbedding(title + "\n\n" + content ?? "");
-}
+// async function getEmbeddingForNote(title: string, content: string | undefined) {
+//   return getEmbedding(title + "\n\n" + content ?? "");
+// }
